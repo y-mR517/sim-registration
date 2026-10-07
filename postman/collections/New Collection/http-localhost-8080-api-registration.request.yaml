@@ -1,0 +1,33 @@
+$kind: http-request
+name: http://localhost:8080/api/registration
+description: ""
+url: http://localhost:8080/api/registration
+method: POST
+headers:
+  - key: Idempotency-Key
+    value: test-registration-112
+    disabled: false
+    description: same NIN, different registrations
+body:
+  type: json
+  content: |-
+    {
+      "nin": "20000223098765432109",
+      "fullName": "Joline Maglan",
+      "dateOfBirth": "2000-02-23",
+      "mobileNumber": "255726745678",
+      "agentId": "1accd25d-ba07-4797-8201-86aebc7fed00",
+      "deviceFingerprint": "android-device-100",
+      "imei": "367838035643809",
+      "imei2": "367838035643817",
+      "deviceType": "SMARTPHONE",
+      "manufacturer": "Samsung",
+      "model": "Galaxy S25",
+      "networkType": "5G",
+      "operatingSystem": "Android",
+      "osVersion": "15",
+      "serialNumber": "SN-ANDROID-002",
+      "simSlot": "SIM1",
+      "appVersion": "1.0.0"
+    }
+order: 1788869058126
