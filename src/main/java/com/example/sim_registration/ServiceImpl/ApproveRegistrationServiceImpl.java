@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -41,23 +42,36 @@ public class ApproveRegistrationServiceImpl
     @Override
     @Transactional(noRollbackFor = ApiException.class)
     public ApproveRegistrationResponse approve(
-            ApproveRegistrationRequest request) {
+            ApproveRegistrationRequest request, UUID agentId) {
 
         SimRegistration registration =
                 simRegistrationRepository
                         .findByReference(request.getReference())
                         .orElseThrow(() ->{
-                            log.warn("Approve failed: reason = REGISTRATION_NOT_FOUND, reference={}",
+                            log.warn("Approve failed: reason =REGISTRATION_NOT_FOUND, reference={}",
                                     request.getReference());
                             return new RegistrationNotFoundException();
                         });
+
+        // NEW: only the agent who created this registration may approve it
+       if (!registration.getAgent().getId().equals(agentId)) {
+            auditService.record(AuditAction.FRAUD_BLOCKED, AuditResult.BLOCKED, registration,
+                    "Approve attempted by an agent who does not own this registration: agentId=" + agentId);
+
+            log.warn("Approve failed: reason=NOT_REGISTRATION_OWNER, reference={}, agentId={}",
+                    registration.getReference(), agentId);
+
+            throw new RegistrationNotFoundException();
+        }
+
+
         RegistrationApproval approval=
                 approvalRepository
                         .findByRegistrationIdForUpdate(registration.getId())
                         .orElseThrow(() ->{
                            log.warn("Approve failed: reason=APPROVAL_RECORD_MISSING, refernce={}",
                                    registration.getReference());
-                           return new InvalidOtpException();
+                           return new InvalidStateException();
                         });
         //Only for registration that is waiting can be approved
         if (registration.getStatus() != RegistrationStatus.PENDING || approval.getStatus() != ApprovalStatus.PENDING){
