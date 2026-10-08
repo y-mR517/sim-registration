@@ -30,7 +30,6 @@ public class bStartRegistrationController {
             @RequestHeader("Idempotency-Key") String idempotencyKey,
             @Valid @RequestBody StartRegistrationRequest request) {
 
-        System.out.println("Controller reached");
 
         StartRegistrationResponse result =
                 startRegistrationService.startRegistration(

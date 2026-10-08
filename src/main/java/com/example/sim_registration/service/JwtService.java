@@ -3,6 +3,7 @@ package com.example.sim_registration.service;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +14,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.UUID;
 
+@Slf4j
 @Service
 public class JwtService {
 
@@ -53,7 +55,8 @@ public class JwtService {
             parseClaims(token);
             return true;
         } catch (Exception e){
-            System.out.println("Token validation failed: " + e.getMessage());
+            // Only the failure type is logged (expired, bad signature, malformed), never the token itself
+            log.debug("Token rejected: {}", e.getClass().getSimpleName());
             return false;
         }
     }
