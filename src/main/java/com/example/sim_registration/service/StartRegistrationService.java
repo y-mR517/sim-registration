@@ -6,6 +6,8 @@ import com.example.sim_registration.dto.response.CompleteRegistrationResponse;
 import com.example.sim_registration.dto.response.RegistrationStatusResponse;
 import com.example.sim_registration.dto.response.StartRegistrationResponse;
 
+import java.util.UUID;
+
 public interface StartRegistrationService {
 
     StartRegistrationResponse startRegistration(
@@ -14,10 +16,10 @@ public interface StartRegistrationService {
     );
 
     RegistrationStatusResponse getRegistrationStatus(
-            String reference
+            String reference, UUID agentId
     );
 
     CompleteRegistrationResponse completeRegistration(
-            CompleteRegistrationRequest request
+            CompleteRegistrationRequest request, UUID agentId
     );
 }

@@ -7,6 +7,7 @@ import com.example.sim_registration.dto.response.RegistrationResult;
 import com.example.sim_registration.dto.response.RegistrationStatusResponse;
 import com.example.sim_registration.dto.response.StartRegistrationResponse;
 import com.example.sim_registration.entity.RegistrationStatus;
+import com.example.sim_registration.security.AuthenticatedAgent;
 import com.example.sim_registration.service.StartRegistrationService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -45,7 +46,7 @@ public class bStartRegistrationController {
             @PathVariable String reference) {
 
         RegistrationStatusResponse response =
-                startRegistrationService.getRegistrationStatus(reference);
+                startRegistrationService.getRegistrationStatus(reference, AuthenticatedAgent.currentAgentId());
 
         return ResponseEntity.ok(response);
     }
@@ -58,7 +59,7 @@ public class bStartRegistrationController {
             CompleteRegistrationRequest request) {
 
         CompleteRegistrationResponse response =
-                startRegistrationService.completeRegistration(request);
+                startRegistrationService.completeRegistration(request, AuthenticatedAgent.currentAgentId());
 
         return ResponseEntity.ok(response);
     }

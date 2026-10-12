@@ -274,16 +274,33 @@ public class StartRegistrationServiceImpl
 
     }
 
+    private SimRegistration findOwnedRegistration(String reference, UUID agentId, String operation) {
+
+        SimRegistration registration = simRegistrationRepository
+                .findByReference(reference)
+                .orElseThrow(() -> {
+                    log.warn("{} failed: reason=REGISTRATION_NOT_FOUND, reference={}", operation, reference);
+                    return new RegistrationNotFoundException();
+                });
+
+        if (!registration.getAgent().getId().equals(agentId)) {
+            auditService.record(AuditAction.FRAUD_BLOCKED, AuditResult.BLOCKED, registration,
+                    operation + " attempted by an agent who does not own this registration: agentId=" + agentId);
+
+            log.warn("{} failed: reason=NOT_REGISTRATION_OWNER, reference={}, agentId={}",
+                    operation, reference, agentId);
+
+            throw new RegistrationNotFoundException();
+        }
+
+        return registration;
+    }
+
     public RegistrationStatusResponse getRegistrationStatus(
-            String reference){
+            String reference, UUID agentId){
 
         SimRegistration registration =
-                simRegistrationRepository
-                        .findByReference(reference)
-                        .orElseThrow(() ->
-                                new IllegalArgumentException(
-                                        "Registration not found"
-                                ));
+                findOwnedRegistration(reference, agentId, "Status lookup");
 
         return RegistrationStatusResponse.builder()
                 .reference(registration.getReference())
@@ -305,15 +322,10 @@ public class StartRegistrationServiceImpl
 
     @Override
     public CompleteRegistrationResponse completeRegistration(
-            CompleteRegistrationRequest request) {
+            CompleteRegistrationRequest request, UUID agentId) {
 
         SimRegistration registration =
-                simRegistrationRepository
-                        .findByReference(request.getReference())
-                        .orElseThrow(() ->
-                                new IllegalArgumentException(
-                                        "Registration not found"
-                                ));
+                findOwnedRegistration(request.getReference(), agentId, "Complete registration");
 
         if (!Boolean.TRUE.equals(registration.getApproved())) {
             throw new IllegalArgumentException(
