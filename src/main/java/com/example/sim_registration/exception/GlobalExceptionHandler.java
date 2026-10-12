@@ -45,7 +45,7 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.BAD_REQUEST, "MALFORMED_REQUEST", "The request body could not be read");
     }
 
-    // TEMPORARY: delete once every IllegalArgumentException in the services is replaced
+    // TEMPORARY:  to be deleted once every IllegalArgumentException in the services is replaced
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ApiErrorResponse> handleTemporary(IllegalArgumentException ex) {
         return build(HttpStatus.BAD_REQUEST, "BAD_REQUEST", ex.getMessage());
@@ -54,6 +54,13 @@ public class GlobalExceptionHandler {
     // Safety net: anything we did not expect
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiErrorResponse> handleUnexpected(Exception ex) {
+
+        // Spring's own web errors (unknown URL, wrong method, wrong content type) already know their status
+        if (ex instanceof org.springframework.web.ErrorResponse errorResponse) {
+            HttpStatus status = HttpStatus.valueOf(errorResponse.getStatusCode().value());
+            return build(status, "REQUEST_ERROR", "The request could not be processed");
+        }
+
         log.error("Unexpected error", ex);   // full detail in the log only
         return build(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_ERROR", "Unexpected error");
     }
