@@ -8,7 +8,6 @@ import com.example.sim_registration.nida.NidaResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 
 @Slf4j
 @Service
@@ -31,9 +30,6 @@ public class VerifyNinService {
 
         return VerifyNinResponse.builder()
                 .verified(true)
-                .firstName(nida.getFirstName())
-                .lastName(nida.getLastName())
-                .dateOfBirth(nida.getDateOfBirth())
                 .message("NIN verified successfully")
                 .build();
     }

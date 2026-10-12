@@ -10,9 +10,5 @@ import lombok.*;
 public class VerifyNinResponse {
 
     private boolean verified;
-    private String nin;
-    private String firstName;
-    private String lastName;
-    private String dateOfBirth;
     private String message;
 }
