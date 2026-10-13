@@ -31,3 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# local test payloads
+/request*.json
