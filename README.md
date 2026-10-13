@@ -16,6 +16,7 @@ A Spring Boot backend for registering SIM cards against a citizen's NIDA identit
 | Real NIDA / MNO / regulator / SMS integrations | Not done (mocks only) |
 | Unit tests | Ownership rules and error handling (see *Running the tests*) |
 | Diagrams and design documents | Not written yet (see *Challenge deliverables*) |
+| Unit tests | Ownership rules, error handling, `verify-nin`, and the token filter |
 
 ## Tech stack
 
@@ -86,6 +87,8 @@ Errors share one shape: `{"code": "...", "message": "...", "status": 409, "times
 | Identity failures give one generic response; fraud blocks give one generic response | Manual |
 | Customer list and mock NIDA lookup endpoints removed (verified to return 404) | Manual |
 | Mobile numbers encrypted with AES-GCM; NIN and phone hashed for lookup | Code review only (see limitations) |
+| `verify-nin` answers only valid or not valid; it returns no name, date of birth or NIN | Unit tests |
+| A token issued to an agent who is later blocked, suspended or deleted stops working on the next request | Unit tests |
 
 ## Running locally
 
@@ -120,7 +123,7 @@ curl -s -X POST http://localhost:8080/api/auth/login \
 ## Running the tests
 
 ```
-./mvnw clean test -Dtest="GlobalExceptionHandlerTest,StartRegistrationServiceImplTest,ApproveRegistrationServiceImplTest"
+./mvnw clean test -Dtest="JwtAuthFilterTest,VerifyNinServiceTest,GlobalExceptionHandlerTest,StartRegistrationServiceImplTest,ApproveRegistrationServiceImplTest"
 ```
 
 A plain `./mvnw test` also runs `contextLoads`, which starts the whole application and therefore needs the database and the environment variables above.
@@ -132,7 +135,7 @@ These are listed in the order I plan to address them.
 **Security**
 - No rate limiting on login, `verify-nin` or OTP sending, so an agent could test NINs one by one.
 - `verify-nin` answers only valid or not valid; it returns no name, date of birth or NIN | Unit tests |
-- A JWT is only checked for signature and expiry. A token issued before an agent was blocked keeps working for approve, complete and status until it expires.
+- Agent status is read from the database on every request, one query each. At the 300 requests per second in the challenge, a short-lived cache would be needed.
 - `HashService` uses plain SHA-256. NINs, phone numbers and OTPs are low-entropy, so an unkeyed hash can be brute-forced offline; it should be an HMAC with a secret key.
 - No encryption key rotation or versioning.
 - The device fingerprint is supplied by the client and can be changed per request, so it is a weak signal.
