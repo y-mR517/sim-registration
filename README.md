@@ -97,7 +97,7 @@ Errors share one shape: `{"code": "...", "message": "...", "status": 409, "times
 |---|---|
 | `JWT_SECRET` | JWT signing secret, at least 32 bytes. Generate one with `openssl rand -base64 32` |
 | `DB_PASSWORD` | Database password (leave empty for a local trust-auth database) |
-| `app.encryption.key` | AES key for encrypting mobile numbers. Must be exactly 16, 24 or 32 characters; supply it from the environment (for example `APP_ENCRYPTION_KEY`) |
+| `app.encryption.key` | AES key for encrypting mobile numbers. Must be exactly 16, 24 or 32 characters (`openssl rand -hex 16` gives 32). |
 
 The database username in `src/main/resources/application.properties` is a local value; change it to match your setup.
 
@@ -131,6 +131,7 @@ These are listed in the order I plan to address them.
 
 **Security**
 - No rate limiting on login, `verify-nin` or OTP sending, so an agent could test NINs one by one.
+- `verify-nin` answers only valid or not valid; it returns no name, date of birth or NIN | Unit tests |
 - A JWT is only checked for signature and expiry. A token issued before an agent was blocked keeps working for approve, complete and status until it expires.
 - `HashService` uses plain SHA-256. NINs, phone numbers and OTPs are low-entropy, so an unkeyed hash can be brute-forced offline; it should be an HMAC with a secret key.
 - No encryption key rotation or versioning.
